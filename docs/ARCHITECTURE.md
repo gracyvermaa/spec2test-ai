@@ -46,3 +46,15 @@ flowchart TB
 ### Requirement Data Flow
 ![Requirement Data Flow](diagrams/data-flow-architecture.png)
 
+
+## Architecture Visuals
+
+### System Architecture
+![System Architecture](diagrams/system-architecture.png)
+
+### Multi-Agent Architecture
+![Multi-Agent Architecture](diagrams/multi-agent-architecture.png)
+
+### Requirement Data Flow
+![Requirement Data Flow](diagrams/data-flow-architecture.png)
+
