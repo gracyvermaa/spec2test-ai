@@ -1,10 +1,13 @@
 
-from services.requirement_analyzer import analyze_requirement
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
+
 from schemas.requirement import (
     RequirementRequest,
     RequirementAnalysis
 )
+
+from services.ai_requirement_analyzer import analyze_requirement_with_ai
+
 
 app = FastAPI(
     title="Spec2Test AI",
@@ -35,7 +38,15 @@ def health_check():
 )
 def analyze_requirement_api(request: RequirementRequest):
 
-    return analyze_requirement(
-        request.title,
-        request.description
-    )
+    try:
+        return analyze_requirement_with_ai(
+            request.title,
+            request.description
+        )
+
+    except Exception as e:
+        print("GEMINI ERROR:", repr(e))
+        raise HTTPException(
+            status_code=502,
+            detail=str(e)
+        )
