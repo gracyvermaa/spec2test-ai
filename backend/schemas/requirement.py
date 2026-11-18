@@ -12,3 +12,6 @@ class RequirementAnalysis(BaseModel):
     summary: str
     functional_requirements: list[str]
     missing_details: list[str]
+    ambiguous_requirements: list[str] = Field(default_factory=list)
+    edge_cases: list[str] = Field(default_factory=list)
+    potential_risks: list[str] = Field(default_factory=list)
