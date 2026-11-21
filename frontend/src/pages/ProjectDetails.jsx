@@ -166,6 +166,7 @@ function ProjectDetails() {
         ...project,
         status: "Analysis Complete",
         analysisResults: data,
+        analyzedAt: new Date().toISOString(),
       };
 
       setProject(updatedProject);
@@ -732,6 +733,7 @@ function ProjectDetails() {
 }
 
 export default ProjectDetails;
+
 
 
 

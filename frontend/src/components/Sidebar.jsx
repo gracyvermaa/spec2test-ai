@@ -1,4 +1,4 @@
-﻿import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
   FolderKanban,
@@ -7,14 +7,14 @@ import {
   FileBarChart,
   Settings,
   Sparkles,
-  ChevronLeft,
-  CircleHelp
+  CircleHelp,
 } from "lucide-react";
+import "../pages/Dashboard.css";
 
 const menuItems = [
   { name: "Dashboard", icon: LayoutDashboard, path: "/dashboard" },
   { name: "My Projects", icon: FolderKanban, path: "/projects" },
-  { name: "Test Cases", icon: ClipboardCheck },
+  { name: "Test Cases", icon: ClipboardCheck, path: "/test-cases" },
   { name: "Execution Results", icon: PlayCircle, path: "/execution" },
   { name: "Reports", icon: FileBarChart, path: "/reports" },
 ];
@@ -23,39 +23,33 @@ function Sidebar() {
   const navigate = useNavigate();
   const location = useLocation();
 
+  const isActive = (item) =>
+    item.path &&
+    (location.pathname === item.path ||
+      (item.path === "/projects" && location.pathname.startsWith("/project/")));
+
   return (
-    <aside className="flex min-h-screen w-[250px] shrink-0 flex-col bg-[#242044] px-5 py-7 text-white">
-      <div className="mb-12 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#A78BFA]">
-            <Sparkles size={25} />
-          </div>
-          <div>
-            <h1 className="text-lg font-bold tracking-wide">Spec2Test</h1>
-            <p className="text-xs text-purple-300">AI Testing Studio</p>
-          </div>
+    <aside className="dash-side">
+      <div className="dash-brand">
+        <div className="dash-logo">
+          <Sparkles size={24} />
         </div>
-        <ChevronLeft size={18} className="text-purple-300" />
+        <div>
+          <b>Spec2Test</b>
+          <small>AI Testing Studio</small>
+        </div>
       </div>
 
-      <p className="mb-4 px-3 text-xs font-semibold uppercase tracking-widest text-purple-300">
-        Workspace
-      </p>
+      <p className="dash-label">Workspace</p>
 
-      <nav className="flex flex-col gap-2">
+      <nav className="flex flex-col gap-1.5">
         {menuItems.map((item) => {
           const Icon = item.icon;
-          const active = location.pathname === item.path;
-
           return (
             <button
               key={item.name}
               onClick={() => item.path && navigate(item.path)}
-              className={`flex items-center gap-3 rounded-xl px-4 py-3 text-left text-sm transition-all ${
-                active
-                  ? "bg-[#8B72D9] font-semibold text-white shadow-lg shadow-purple-950/30"
-                  : "text-purple-100 hover:bg-white/10"
-              }`}
+              className={`dash-nav-item ${isActive(item) ? "is-active" : ""}`}
             >
               <Icon size={19} />
               {item.name}
@@ -64,24 +58,19 @@ function Sidebar() {
         })}
       </nav>
 
-      <div className="mt-auto space-y-3">
-        <button className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm text-purple-100 hover:bg-white/10">
-          <CircleHelp size={19} />
-          Help & Support
+      <div className="mt-auto space-y-1.5 pt-6">
+        <button onClick={() => navigate("/help-support")} className="dash-nav-item"><CircleHelp size={19} />
+          Help &amp; Support
         </button>
-
-        <button className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm text-purple-100 hover:bg-white/10">
-          <Settings size={19} />
+        <button onClick={() => navigate("/settings")} className="dash-nav-item"><Settings size={19} />
           Settings
         </button>
 
-        <div className="mt-5 rounded-2xl border border-white/10 bg-white/5 p-4">
+        <div className="dash-promo">
           <p className="text-sm font-semibold">Spec2Test AI</p>
-          <p className="mt-1 text-xs text-purple-300">
-            Intelligent testing, simplified.
-          </p>
+          <p className="mt-1 text-xs text-purple-300">Intelligent testing, simplified.</p>
           <div className="mt-3 flex items-center gap-2 text-xs text-purple-200">
-            <Sparkles size={14} />
+            <Sparkles size={14} className="spark" />
             Powered by AI
           </div>
         </div>
@@ -91,4 +80,5 @@ function Sidebar() {
 }
 
 export default Sidebar;
+
 

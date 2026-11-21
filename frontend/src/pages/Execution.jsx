@@ -15,37 +15,78 @@ import {
 } from "lucide-react";
 
 const RUNS_KEY = "spec2test_execution_runs";
+const DEFECTS_KEY = "spec2test_defects";
+const EXPANDED_DEFECTS_KEY = "spec2test_expanded_defects";
 
 function Execution() {
-  const [projects, setProjects] = useState([]);
-  const [selectedProjectId, setSelectedProjectId] = useState("");
-  const [runs, setRuns] = useState([]);
+  const [projects, setProjects] = useState(() => JSON.parse(localStorage.getItem("spec2test_projects") || "[]"));
+  const [selectedProjectId, setSelectedProjectId] = useState(() => {
+    const savedProjects = JSON.parse(localStorage.getItem("spec2test_projects") || "[]");
+    const savedRuns = JSON.parse(localStorage.getItem(RUNS_KEY) || "[]");
+
+    const latestRun = savedRuns
+      .filter((run) => run.status === "Completed")
+      .sort((a, b) => new Date(b.startedAt) - new Date(a.startedAt))[0];
+
+    if (latestRun && savedProjects.some((project) => String(project.id) === String(latestRun.projectId))) {
+      return String(latestRun.projectId);
+    }
+
+    const firstAnalyzed = savedProjects.find(
+      (project) => project.analysisResults?.test_cases?.test_cases?.length
+    );
+
+    return firstAnalyzed ? String(firstAnalyzed.id) : "";
+  });
+  const [runs, setRuns] = useState(() => JSON.parse(localStorage.getItem(RUNS_KEY) || "[]"));
   const [isRunning, setIsRunning] = useState(false);
   const [currentResults, setCurrentResults] = useState({});
   const [currentRun, setCurrentRun] = useState(null);
   const [selectedTest, setSelectedTest] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [viewHistory, setViewHistory] = useState(false);
-
+  const [defects, setDefects] = useState(() => JSON.parse(localStorage.getItem(DEFECTS_KEY) || "[]"));
+  const [defectSearch, setDefectSearch] = useState("");
+  const [defectStatusFilter, setDefectStatusFilter] = useState("All");
+  const [expandedDefectIds, setExpandedDefectIds] = useState(() =>
+    JSON.parse(localStorage.getItem(EXPANDED_DEFECTS_KEY) || "[]")
+  );
   useEffect(() => {
-    const savedProjects = JSON.parse(
-      localStorage.getItem("spec2test_projects") || "[]"
-    );
-    const savedRuns = JSON.parse(localStorage.getItem(RUNS_KEY) || "[]");
-
-    setProjects(savedProjects);
-    setRuns(savedRuns);
-
-    const firstAnalyzed = savedProjects.find(
-      (project) => project.analysisResults?.test_cases?.test_cases?.length
-    );
-
-    if (firstAnalyzed) {
-      setSelectedProjectId(String(firstAnalyzed.id));
+    if (!selectedProjectId) {
+      setCurrentRun(null);
+      setCurrentResults({});
+      return;
     }
-  }, []);
 
-  const selectedProject = projects.find(
+    const latestRun = runs
+      .filter(
+        (run) =>
+          String(run.projectId) === selectedProjectId &&
+          run.status === "Completed" &&
+          Array.isArray(run.results)
+      )
+      .sort((a, b) => new Date(b.startedAt) - new Date(a.startedAt))[0];
+
+    if (!latestRun) {
+      setCurrentRun(null);
+      setCurrentResults({});
+      return;
+    }
+
+    const restoredResults = {};
+    latestRun.results.forEach((result) => {
+      restoredResults[result.testCaseId] = {
+        status: result.status,
+        logs: result.logs || [],
+      };
+    });
+
+    setCurrentRun(latestRun);
+    setCurrentResults(restoredResults);
+    setViewHistory(false);
+    setSelectedTest(null);
+  }, [selectedProjectId, runs]);
+const selectedProject = projects.find(
     (project) => String(project.id) === selectedProjectId
   );
 
@@ -55,6 +96,20 @@ function Execution() {
   const projectRuns = runs.filter(
     (run) => String(run.projectId) === selectedProjectId
   );
+  const projectDefects = defects.filter(
+    (defect) => String(defect.projectId) === selectedProjectId
+  );
+
+  const filteredDefects = projectDefects.filter((defect) => {
+    const matchesSearch = `${defect.id} ${defect.title} ${defect.testCaseId}`
+      .toLowerCase()
+      .includes(defectSearch.toLowerCase());
+
+    const matchesStatus =
+      defectStatusFilter === "All" || defect.status === defectStatusFilter;
+
+    return matchesSearch && matchesStatus;
+  });
 
   const completed = Object.values(currentResults).filter(
     (result) => result.status === "Passed" || result.status === "Failed"
@@ -75,6 +130,96 @@ function Execution() {
   const saveRuns = (updatedRuns) => {
     setRuns(updatedRuns);
     localStorage.setItem(RUNS_KEY, JSON.stringify(updatedRuns));
+  };
+  const saveDefects = (updatedDefects) => {
+    setDefects(updatedDefects);
+    localStorage.setItem(DEFECTS_KEY, JSON.stringify(updatedDefects));
+  };
+
+  const createDefectsForRun = (run, failedResults) => {
+    if (!failedResults.length) return;
+
+    const existingDefects = JSON.parse(
+      localStorage.getItem(DEFECTS_KEY) || "[]"
+    );
+
+    let updatedDefects = [...existingDefects];
+
+    let nextNumber = existingDefects.reduce((max, defect) => {
+      const number = Number(String(defect.id).replace("DEF-", ""));
+      return Number.isFinite(number) ? Math.max(max, number) : max;
+    }, 0);
+
+    const now = new Date().toISOString();
+
+    failedResults.forEach((result) => {
+      const existingIndex = updatedDefects.findIndex(
+        (defect) =>
+          String(defect.projectId) === String(run.projectId) &&
+          defect.testCaseId === result.testCaseId
+      );
+
+      const priority = String(result.priority || "").toLowerCase();
+
+      const severity =
+        priority.includes("critical") ? "Critical" :
+        priority.includes("high") ? "High" :
+        priority.includes("medium") ? "Medium" : "Low";
+
+      if (existingIndex !== -1) {
+        const existing = updatedDefects[existingIndex];
+
+        updatedDefects[existingIndex] = {
+          ...existing,
+          runId: run.id,
+          lastRunId: run.id,
+          runIds: [...new Set([...(existing.runIds || [existing.runId]), run.id])],
+          occurrences: (existing.occurrences || 1) + 1,
+          lastSeenAt: now,
+          actualResult: result.errorMessage || "Simulated test failure",
+          severity,
+          status:
+            existing.status === "Resolved" || existing.status === "Closed"
+              ? "Open"
+              : existing.status,
+          updatedAt: now,
+        };
+      } else {
+        nextNumber++;
+
+        updatedDefects.unshift({
+          id: `DEF-${String(nextNumber).padStart(3, "0")}`,
+          projectId: run.projectId,
+          projectName: run.projectName,
+          runId: run.id,
+          lastRunId: run.id,
+          runIds: [run.id],
+          occurrences: 1,
+          lastSeenAt: now,
+          testCaseId: result.testCaseId,
+          title: result.title,
+          description: result.description || "",
+          steps: result.steps || [],
+          expectedResult: result.expectedResult || "Not specified",
+          actualResult: result.errorMessage || "Simulated test failure",
+          severity,
+          status: "Open",
+          createdAt: now,
+          updatedAt: now,
+        });
+      }
+    });
+
+    saveDefects(updatedDefects);
+  };
+  const updateDefect = (defectId, updates) => {
+    const updatedDefects = defects.map((defect) =>
+      defect.id === defectId
+        ? { ...defect, ...updates, updatedAt: new Date().toISOString() }
+        : defect
+    );
+
+    saveDefects(updatedDefects);
   };
 
   const startExecution = async () => {
@@ -171,6 +316,10 @@ function Execution() {
     const updatedRuns = [run, ...runs];
     saveRuns(updatedRuns);
     setCurrentRun(run);
+    createDefectsForRun(
+      run,
+      resultList.filter((result) => result.status === "Failed")
+    );
     setIsRunning(false);
   };
 
@@ -538,6 +687,303 @@ function Execution() {
                 </div>
               )}
             </div>
+            <div className="mt-6 rounded-2xl border border-purple-100 bg-white p-5 shadow-sm">
+              <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <h2 className="text-lg font-bold text-[#211A4B]">
+                    Defect Tracking
+                  </h2>
+                  <p className="mt-1 text-sm text-[#81769F]">
+                    Track, prioritize, and manage defects identified during simulated test runs.
+                  </p>
+                </div>
+                <span className="rounded-full bg-purple-50 px-3 py-1.5 text-xs font-semibold text-purple-700">
+                  {projectDefects.length} total defects
+                </span>
+              </div>
+
+              <div className="mb-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
+                {[
+                  {
+                    label: "Total Defects",
+                    value: projectDefects.length,
+                    color: "text-purple-700",
+                  },
+                  {
+                    label: "Open",
+                    value: projectDefects.filter((d) => d.status === "Open").length,
+                    color: "text-rose-600",
+                  },
+                  {
+                    label: "Critical",
+                    value: projectDefects.filter((d) => d.severity === "Critical").length,
+                    color: "text-red-700",
+                  },
+                  {
+                    label: "Resolved",
+                    value: projectDefects.filter(
+                      (d) => d.status === "Resolved" || d.status === "Closed"
+                    ).length,
+                    color: "text-emerald-600",
+                  },
+                ].map((item) => (
+                  <div
+                    key={item.label}
+                    className="rounded-xl border border-purple-100 bg-purple-50/40 p-4"
+                  >
+                    <p className="text-xs text-[#81769F]">{item.label}</p>
+                    <p className={`mt-2 text-2xl font-bold ${item.color}`}>
+                      {item.value}
+                    </p>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mb-4 flex flex-wrap gap-3">
+                <div className="relative min-w-[200px] flex-1">
+                  <Search
+                    size={16}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-purple-400"
+                  />
+                  <input
+                    value={defectSearch}
+                    onChange={(event) => setDefectSearch(event.target.value)}
+                    placeholder="Search defects or test cases..."
+                    className="w-full rounded-lg border border-purple-100 py-2 pl-9 pr-3 text-sm outline-none focus:border-purple-300"
+                  />
+                </div>
+
+                <select
+                  value={defectStatusFilter}
+                  onChange={(event) => setDefectStatusFilter(event.target.value)}
+                  className="rounded-lg border border-purple-100 bg-white px-3 py-2 text-sm text-[#514675] outline-none focus:border-purple-300"
+                >
+                  {["All", "Open", "In Progress", "Resolved", "Closed"].map((status) => (
+                    <option key={status} value={status}>
+                      {status === "All" ? "All Statuses" : status}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {filteredDefects.length === 0 ? (
+                <div className="rounded-xl border border-dashed border-purple-200 py-10 text-center">
+                  <AlertTriangle className="mx-auto mb-2 text-purple-300" size={28} />
+                  <p className="font-medium text-[#514675]">
+                    {projectDefects.length === 0
+                      ? "No defects detected yet"
+                      : "No defects match your filters"}
+                  </p>
+                  <p className="mt-1 text-sm text-[#81769F]">
+                    {projectDefects.length === 0
+                      ? "Run the simulated tests. Failed test cases will automatically create defects here."
+                      : "Try changing your search or status filter."}
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {filteredDefects.map((defect) => (
+                    <div
+                      key={defect.id}
+                      className="rounded-xl border border-purple-100 p-4 transition hover:border-purple-200"
+                    >
+                      <div className="flex flex-wrap items-start justify-between gap-3">
+                        <div className="min-w-0 flex-1">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="text-xs font-bold text-purple-600">
+                              {defect.id}
+                            </span>
+                            <span className="rounded-md bg-purple-50 px-2 py-1 text-xs text-purple-700">
+                              {defect.testCaseId}
+                            </span>
+                            <span
+                              className={`rounded-full border px-2.5 py-1 text-xs font-semibold ${
+                                defect.severity === "Critical"
+                                  ? "border-red-200 bg-red-50 text-red-700"
+                                  : defect.severity === "High"
+                                  ? "border-orange-200 bg-orange-50 text-orange-700"
+                                  : defect.severity === "Medium"
+                                  ? "border-amber-200 bg-amber-50 text-amber-700"
+                                  : "border-gray-200 bg-gray-50 text-gray-600"
+                              }`}
+                            >
+                              {defect.severity}
+                            </span>
+                          </div>
+                          <h3 className="mt-2 font-semibold text-[#211A4B]">
+                            {defect.title}
+                          </h3>
+                          <p className="mt-1 text-sm text-[#81769F]">
+                            Run #{String(defect.runId).slice(-6)} · Created{" "}
+                            {new Date(defect.createdAt).toLocaleString()}
+                          </p>
+                          {defect.occurrences > 1 && (
+                            <span className="mt-2 inline-flex items-center gap-1 rounded-full border border-purple-200 bg-purple-50 px-2.5 py-1 text-xs font-medium text-purple-700">
+                              <span>↻</span>
+                              Repeated failure · {defect.occurrences} occurrences
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="flex flex-wrap gap-2">
+                          <select
+                            value={defect.severity}
+                            onChange={(event) =>
+                              updateDefect(defect.id, {
+                                severity: event.target.value,
+                              })
+                            }
+                            className="rounded-lg border border-purple-100 bg-white px-2 py-1.5 text-xs outline-none focus:border-purple-300"
+                            aria-label={`Severity for ${defect.id}`}
+                          >
+                            {["Critical", "High", "Medium", "Low"].map((severity) => (
+                              <option key={severity} value={severity}>
+                                {severity}
+                              </option>
+                            ))}
+                          </select>
+
+                          <select
+                            value={defect.status}
+                            onChange={(event) =>
+                              updateDefect(defect.id, {
+                                status: event.target.value,
+                              })
+                            }
+                            className="rounded-lg border border-purple-100 bg-white px-2 py-1.5 text-xs outline-none focus:border-purple-300"
+                            aria-label={`Status for ${defect.id}`}
+                          >
+                            {["Open", "In Progress", "Resolved", "Closed"].map((status) => (
+                              <option key={status} value={status}>
+                                {status}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+
+                      <details
+                        className="mt-3"
+                        open={expandedDefectIds.includes(defect.id)}
+                        onToggle={(event) => {
+                          const isOpen = event.currentTarget.open;
+
+                          setExpandedDefectIds((previous) => {
+                            const next = isOpen
+                              ? [...new Set([...previous, defect.id])]
+                              : previous.filter((id) => id !== defect.id);
+
+                            localStorage.setItem(
+                              EXPANDED_DEFECTS_KEY,
+                              JSON.stringify(next)
+                            );
+
+                            return next;
+                          });
+                        }}
+                      >
+                        <summary className="cursor-pointer text-sm font-medium text-purple-600 hover:text-purple-800">
+                          View defect details
+                        </summary>
+                        <div className="mt-3 space-y-3 rounded-lg bg-purple-50/50 p-4">
+                          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                            <div className="rounded-lg border border-purple-100 bg-white p-3">
+                              <p className="text-xs font-medium text-[#81769F]">
+                                First Detected
+                              </p>
+                              <p className="mt-1 text-sm font-semibold text-[#514675]">
+                                {new Date(defect.createdAt).toLocaleString()}
+                              </p>
+                            </div>
+
+                            <div className="rounded-lg border border-purple-100 bg-white p-3">
+                              <p className="text-xs font-medium text-[#81769F]">
+                                Last Detected
+                              </p>
+                              <p className="mt-1 text-sm font-semibold text-[#514675]">
+                                {new Date(defect.lastSeenAt || defect.updatedAt).toLocaleString()}
+                              </p>
+                            </div>
+
+                            <div className="rounded-lg border border-purple-100 bg-white p-3">
+                              <p className="text-xs font-medium text-[#81769F]">
+                                Total Occurrences
+                              </p>
+                              <p className="mt-1 text-lg font-bold text-purple-700">
+                                {defect.occurrences || 1}
+                              </p>
+                            </div>
+
+                            <div className="rounded-lg border border-purple-100 bg-white p-3">
+                              <p className="text-xs font-medium text-[#81769F]">
+                                Unique Runs Affected
+                              </p>
+                              <p className="mt-1 text-lg font-bold text-purple-700">
+                                {defect.runIds?.length || (defect.runId ? 1 : 0)}
+                              </p>
+                            </div>
+                          </div>
+
+                          <div>
+                            <p className="mb-1 text-xs font-semibold text-[#81769F]">
+                              Description
+                            </p>
+                            <p className="text-sm text-[#514675]">
+                              {defect.description || "No description available."}
+                            </p>
+                          </div>
+
+                          <div>
+                            <p className="mb-1 text-xs font-semibold text-[#81769F]">
+                              Expected Result
+                            </p>
+                            <p className="text-sm text-[#514675]">
+                              {defect.expectedResult}
+                            </p>
+                          </div>
+
+                          <div>
+                            <p className="mb-1 text-xs font-semibold text-[#81769F]">
+                              Actual Result
+                            </p>
+                            <p className="text-sm text-rose-700">
+                              {defect.actualResult}
+                            </p>
+                          </div>
+
+                          <div>
+                            <p className="mb-1 text-xs font-semibold text-[#81769F]">
+                              Steps to Reproduce
+                            </p>
+                            {defect.steps.length ? (
+                              <ol className="space-y-1">
+                                {defect.steps.map((step, index) => (
+                                  <li key={index} className="text-sm text-[#514675]">
+                                    {index + 1}. {step}
+                                  </li>
+                                ))}
+                              </ol>
+                            ) : (
+                              <p className="text-sm text-[#514675]">
+                                No reproduction steps available.
+                              </p>
+                            )}
+                          </div>
+
+                          <div className="flex flex-wrap gap-4 border-t border-purple-100 pt-3 text-xs text-[#81769F]">
+                            <span>Project: {defect.projectName}</span>
+                            <span>Test: {defect.testCaseId}</span>
+                            <span>
+                              Last updated: {new Date(defect.updatedAt).toLocaleString()}
+                            </span>
+                          </div>
+                        </div>
+                      </details>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </>
         )}
       </div>
@@ -546,3 +992,15 @@ function Execution() {
 }
 
 export default Execution;
+
+
+
+
+
+
+
+
+
+
+
+
