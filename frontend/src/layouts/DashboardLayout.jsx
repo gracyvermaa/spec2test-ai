@@ -1,5 +1,6 @@
 import { useLocation } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
+import "../pages/Profile.css";
 import "../pages/Execution.css";
 import "../pages/ProjectDetails.css";
 import "../pages/Reports.css";

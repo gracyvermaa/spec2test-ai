@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+﻿import { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import "./Hero.css";
 
 const Spark = ({ size = 24 }) => (
@@ -17,11 +17,110 @@ const Check = () => (
   <span className="chk"><Ico size={12}><path d="m5 12 5 5 9-10" /></Ico></span>
 );
 
-const MSGS = ["Testing workflow in progress…", "Analyzing requirements…", "Generating test cases…", "Detecting risks…", "Calculating coverage…"];
+const MSGS = ["Testing workflow in progressâ€¦", "Analyzing requirementsâ€¦", "Generating test casesâ€¦", "Detecting risksâ€¦", "Calculating coverageâ€¦"];
 
 export default function Hero({ onStart, onDemo }) {
+  const navigate = useNavigate();
+
+  const [authUser, setAuthUser] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem("spec2test-auth-user") || "null");
+    } catch {
+      return null;
+    }
+  });
+
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [authMode, setAuthMode] = useState("login");
+  const [authName, setAuthName] = useState("");
+  const [authEmail, setAuthEmail] = useState("");
+  const [authPassword, setAuthPassword] = useState("");
+  const [authConfirmPassword, setAuthConfirmPassword] = useState("");
+  const [authError, setAuthError] = useState("");
+  const handleAuthSubmit = (e) => {
+    e.preventDefault();
+    setAuthError("");
+
+    const email = authEmail.trim().toLowerCase();
+
+    let users = [];
+    try {
+      users = JSON.parse(localStorage.getItem("spec2test-users") || "[]");
+    } catch {
+      users = [];
+    }
+
+    if (authMode === "signup") {
+      if (authPassword !== authConfirmPassword) {
+        setAuthError("Passwords do not match.");
+        return;
+      }
+
+      if (users.some((user) => user.email === email)) {
+        setAuthError("An account with this email already exists.");
+        return;
+      }
+
+      const newUser = {
+        name: authName.trim(),
+        email,
+        password: authPassword
+      };
+
+      users.push(newUser);
+      localStorage.setItem("spec2test-users", JSON.stringify(users));
+
+      const loggedInUser = { name: newUser.name, email: newUser.email };
+      localStorage.setItem("spec2test-auth-user", JSON.stringify(loggedInUser));
+      localStorage.setItem("spec2test-auth-token", "demo-token");
+
+      setAuthUser(loggedInUser);
+      setAuthModalOpen(false);
+      setUserMenuOpen(false);
+      window.dispatchEvent(new Event("spec2test-auth-updated"));
+      return;
+    }
+
+    const matchedUser = users.find(
+      (user) => user.email === email && user.password === authPassword
+    );
+
+    if (!matchedUser) {
+      setAuthError("Invalid email or password.");
+      return;
+    }
+
+    const loggedInUser = { name: matchedUser.name, email: matchedUser.email };
+    localStorage.setItem("spec2test-auth-user", JSON.stringify(loggedInUser));
+    localStorage.setItem("spec2test-auth-token", "demo-token");
+
+    setAuthUser(loggedInUser);
+    setAuthModalOpen(false);
+    setUserMenuOpen(false);
+    window.dispatchEvent(new Event("spec2test-auth-updated"));
+  };
+  useEffect(() => {
+    if (!authModalOpen) return;
+
+    const handleEscape = (event) => {
+      if (event.key === "Escape") setAuthModalOpen(false);
+    };
+
+    window.addEventListener("keydown", handleEscape);
+    return () => window.removeEventListener("keydown", handleEscape);
+  }, [authModalOpen]);
   const [msg, setMsg] = useState(0);
   const [z, setZ] = useState(1);
+
+  const handleLogout = () => {
+    localStorage.removeItem("spec2test-auth-user");
+    localStorage.removeItem("spec2test-auth-token");
+    setAuthUser(null);
+    setUserMenuOpen(false);
+    window.dispatchEvent(new Event("spec2test-auth-updated"));
+    navigate("/");
+  };
   useEffect(() => {
     const fit = () => setZ(Math.max(0.6, Math.min(1, (window.innerHeight - 190) / 660)));
     fit();
@@ -41,27 +140,50 @@ export default function Hero({ onStart, onDemo }) {
     <section className="hero" style={{ "--z": z }} onMouseMove={onMove}>
       <header className="nav">
         <Link className="brand" to="/"><Spark size={34} /> Spec2Test AI</Link>
-        <nav className="nav-links">
-          <Link className="active" to="/dashboard">
-            <Ico size={18}><path d="m3 11 9-8 9 8M5 10v10h5v-6h4v6h5V10" /></Ico> Dashboard
-          </Link>
-          <Link to="/projects">Projects</Link>
-          <Link to="/reports">Analytics</Link>
-          <a href="#about">About</a>
-        </nav>
+
         <div className="nav-right">
-          <button className="bell" aria-label="Notifications">
-            <Ico><path d="M6 8a6 6 0 1 1 12 0c0 7 3 8 3 8H3s3-1 3-8M10 20a2 2 0 0 0 4 0" /></Ico>
-            <i />
-          </button>
-          <button className="avatar">G <Ico size={14}><path d="m6 9 6 6 6-6" /></Ico></button>
+          {!authUser ? (
+            <>
+              <button type="button" className="auth-btn login-btn" onClick={() => { setAuthMode("login"); setAuthModalOpen(true); }}>Login</button>
+              <button type="button" className="auth-btn signup-btn" onClick={() => { setAuthMode("signup"); setAuthModalOpen(true); }}>Sign Up</button>
+            </>
+          ) : (
+            <div className="user-area">
+              <button
+                className="user-button"
+                onClick={() => setUserMenuOpen((open) => !open)}
+                aria-expanded={userMenuOpen}
+              >
+                <span className="user-initial">
+                  {(authUser.name || "U").trim().charAt(0).toUpperCase()}
+                </span>
+                <span className="user-name">
+                  {(authUser.name || "User").split(" ")[0]}
+                </span>
+                <Ico size={14}><path d="m6 9 6 6 6-6" /></Ico>
+              </button>
+
+              {userMenuOpen && (
+                <div className="user-menu">
+                  <div className="user-menu-heading">
+                    <strong>{authUser.name || "User"}</strong>
+                    <small>{authUser.email || ""}</small>
+                  </div>
+                  <Link to="/dashboard" onClick={() => setUserMenuOpen(false)}>
+                    Dashboard
+                  </Link>
+                  <button onClick={handleLogout}>Logout</button>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </header>
 
       <div className="hero-grid">
         {/* LEFT */}
         <div className="copy">
-          <span className="badge"><Spark size={18} /> AI-Powered Testing Platform <small>›</small></span>
+          <span className="badge"><Spark size={18} /> AI-Powered Testing Platform <small>â€º</small></span>
           <h1>
             Testing, made
             <span className="accent">intelligent.<Spark size={34} /></span>
@@ -144,6 +266,100 @@ export default function Hero({ onStart, onDemo }) {
         <Ico size={18}><path d="M3 12h3l2-6 4 12 3-9 2 3h4" /></Ico>
         <span key={msg} className="msg">{MSGS[msg]}</span><em><u /><u /><u /></em>
       </div>
-    </section>
+    
+      {authModalOpen && (
+        <div className="auth-overlay" onClick={() => setAuthModalOpen(false)}>
+          <div className="auth-modal" onClick={(e) => e.stopPropagation()}>
+            <button type="button" className="auth-close" onClick={() => setAuthModalOpen(false)}>×</button>
+
+            <div className="auth-modal-logo">
+              <Spark size={30} />
+            </div>
+
+            <h2>{authMode === "login" ? "Welcome back!" : "Create your account"}</h2>
+
+            <p className="auth-modal-subtitle">
+              {authMode === "login"
+                ? "Sign in to continue to Spec2Test AI"
+                : "Join Spec2Test AI and start testing smarter"}
+            </p>
+
+            <form onSubmit={handleAuthSubmit}>
+              {authMode === "signup" && (
+                <div className="auth-field">
+                  <label>Full Name</label>
+                  <input
+                    type="text"
+                    placeholder="Your full name"
+                    value={authName}
+                    onChange={(e) => setAuthName(e.target.value)}
+                    required
+                  />
+                </div>
+              )}
+
+              <div className="auth-field">
+                <label>Email Address</label>
+                <input
+                  type="email"
+                  placeholder="you@example.com"
+                  value={authEmail}
+                  onChange={(e) => setAuthEmail(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="auth-field">
+                <label>Password</label>
+                <input
+                  type="password"
+                  placeholder="Enter your password"
+                  value={authPassword}
+                  onChange={(e) => setAuthPassword(e.target.value)}
+                  minLength={6}
+                  required
+                />
+              </div>
+
+              {authMode === "signup" && (
+                <div className="auth-field">
+                  <label>Confirm Password</label>
+                  <input
+                    type="password"
+                    placeholder="Confirm your password"
+                    value={authConfirmPassword}
+                    onChange={(e) => setAuthConfirmPassword(e.target.value)}
+                    required
+                  />
+                </div>
+              )}
+
+              {authError && (
+                <p className="auth-error">{authError}</p>
+              )}
+
+              {authMode === "login" && (
+                <button type="button" className="forgot-password">Forgot password?</button>
+              )}
+
+              <button type="submit" className="auth-submit">
+                {authMode === "login" ? "Login" : "Create Account"}
+              </button>
+            </form>
+
+            <p className="auth-switch">
+              {authMode === "login" ? "Don't have an account? " : "Already have an account? "}
+              <button type="button" onClick={() => setAuthMode(authMode === "login" ? "signup" : "login")}>
+                {authMode === "login" ? "Sign Up" : "Login"}
+              </button>
+            </p>
+          </div>
+        </div>
+      )}
+</section>
   );
 }
+
+
+
+

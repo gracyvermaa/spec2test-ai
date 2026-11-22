@@ -1,5 +1,6 @@
-import { useLocation, useNavigate } from "react-router-dom";
+﻿import { useLocation, useNavigate } from "react-router-dom";
 import {
+  House,
   LayoutDashboard,
   FolderKanban,
   ClipboardCheck,
@@ -39,6 +40,15 @@ function Sidebar() {
           <small>AI Testing Studio</small>
         </div>
       </div>
+
+      <button
+        onClick={() => navigate("/")}
+        className="dash-nav-item mb-5"
+        title="Go to Landing Page"
+      >
+        <House size={19} />
+        Home
+      </button>
 
       <p className="dash-label">Workspace</p>
 
@@ -80,5 +90,6 @@ function Sidebar() {
 }
 
 export default Sidebar;
+
 
 
