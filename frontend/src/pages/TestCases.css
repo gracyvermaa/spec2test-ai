@@ -1,0 +1,108 @@
+/* Test Cases theme — scoped to /test-cases only; no JSX / logic changes.
+   Works for a real <table> or a div/grid based list. */
+@keyframes tc-rise { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: none; } }
+@keyframes tc-row { from { opacity: 0; transform: translateX(-18px); } to { opacity: 1; transform: none; } }
+@keyframes tc-flow { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+@keyframes tc-shine { from { background-position: 220% 0; } to { background-position: -120% 0; } }
+@keyframes tc-float { 0%,100% { translate: 0 0; } 50% { translate: 0 -5px; } }
+@keyframes tc-glow { 0%,100% { box-shadow: 0 10px 24px -8px rgba(0,0,0,.35); } 50% { box-shadow: 0 10px 32px -2px rgba(255,255,255,.55); } }
+@keyframes tc-pulse { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: .45; transform: scale(1.6); } }
+
+main[data-page="/test-cases"] {
+  background:
+    radial-gradient(700px 380px at 95% -5%, rgba(196,164,255,.38), transparent 70%),
+    radial-gradient(560px 340px at 0% 45%, rgba(240,171,252,.16), transparent 70%), #f8f6ff;
+
+  /* entrance */
+  & > div > * { animation: tc-rise .75s cubic-bezier(.2,.8,.2,1) both; }
+  & > div > :nth-child(2) { animation-delay: .08s; } & > div > :nth-child(3) { animation-delay: .16s; }
+  & > div > :nth-child(4) { animation-delay: .24s; } & > div > :nth-child(n+5) { animation-delay: .32s; }
+
+  /* ---------- header banner ---------- */
+  & > div > :first-child {
+    position: relative; overflow: hidden; padding: 30px 36px; border-radius: 28px; color: #fff;
+    background: linear-gradient(120deg, #5b21b6, #7c3aed 40%, #a855f7 72%, #d946ef); background-size: 220% 220%;
+    animation: tc-rise .75s both, tc-flow 14s ease infinite; box-shadow: 0 28px 56px -26px rgba(109,40,217,.65);
+    &::before { content: ""; position: absolute; top: -110px; right: -60px; width: 380px; height: 380px; border-radius: 50%; background: radial-gradient(circle, rgba(255,255,255,.34), transparent 65%); pointer-events: none; }
+    &::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(110deg, transparent 40%, rgba(255,255,255,.2) 50%, transparent 60%); background-size: 250% 100%; animation: tc-shine 7s infinite; }
+    > * { position: relative; z-index: 1; }
+    h1 { color: #fff; font-size: clamp(28px, 2.8vw, 40px); font-weight: 800; letter-spacing: -.03em; text-shadow: 0 4px 24px rgba(40,10,90,.35); }
+    p, span, svg { color: rgba(255,255,255,.92); }
+    [class*="uppercase"], [class*="tracking-"] { color: #fff; letter-spacing: .16em; }
+    button { color: #5b21b6; background: #fff; border: 0; border-radius: 999px; padding: 13px 24px; animation: tc-glow 2.8s ease-in-out infinite; transition: transform .2s; position: relative; overflow: hidden; }
+    button svg { color: #5b21b6; }
+    button:hover { transform: translateY(-3px) scale(1.03); }
+    button::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(110deg, transparent 35%, rgba(124,58,237,.25) 50%, transparent 65%); background-size: 250% 100%; animation: tc-shine 3.6s infinite; }
+  }
+
+  /* ---------- cards ---------- */
+  [class*="rounded-2xl"][class*="border-purple-100"], [class*="rounded-2xl"][class*="bg-white"] { position: relative; overflow: clip; transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+    &::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 3px; opacity: .8; background: linear-gradient(90deg, #8b5cf6, #d946ef, #8b5cf6); background-size: 200% 100%; animation: tc-flow 6s linear infinite; pointer-events: none; }
+    &:hover { border-color: #d6c1ff; box-shadow: 0 20px 44px -16px rgba(124,58,237,.3); } }
+
+  /* four stat cards */
+  & > div > div[class*="grid"] > div { padding-top: 6px;
+    svg { transition: transform .35s; animation: tc-float 4s ease-in-out infinite; }
+    &:hover { transform: translateY(-5px); }
+    &:hover svg { transform: rotate(-12deg) scale(1.25); }
+    [class*="text-3xl"], [class*="text-2xl"] { font-size: 40px; line-height: 1.1; letter-spacing: -.03em; background: linear-gradient(120deg, #211a4b, #7c3aed); -webkit-background-clip: text; background-clip: text; color: transparent; } }
+  & > div > div[class*="grid"] > div:nth-child(2)::before { background: linear-gradient(90deg, #10b981, #6ee7b7); }
+  & > div > div[class*="grid"] > div:nth-child(3)::before { background: linear-gradient(90deg, #f43f5e, #fb7185); }
+  & > div > div[class*="grid"] > div:nth-child(4)::before { background: linear-gradient(90deg, #f59e0b, #fcd34d); }
+  & > div > div[class*="grid"] > div:nth-child(1) { animation: tc-rise .6s .16s both; } & > div > div[class*="grid"] > div:nth-child(2) { animation: tc-rise .6s .24s both; }
+  & > div > div[class*="grid"] > div:nth-child(3) { animation: tc-rise .6s .32s both; } & > div > div[class*="grid"] > div:nth-child(4) { animation: tc-rise .6s .40s both; }
+
+  /* ---------- filters ---------- */
+  select, input { transition: border-color .2s, box-shadow .2s, transform .2s; cursor: pointer; }
+  input { cursor: text; }
+  select:hover, input:hover { border-color: #b79cf5; }
+  select:focus, input:focus { border-color: #a78bfa !important; box-shadow: 0 0 0 4px rgba(167,139,250,.22); outline: none; }
+
+  /* ---------- table / list ---------- */
+  table { border-collapse: separate; border-spacing: 0; width: 100%; }
+  thead th, & div[class*="uppercase"][class*="grid"] { background: linear-gradient(90deg, #f5efff, #fbf1ff); color: #6d28d9; letter-spacing: .12em; font-weight: 700; }
+  tbody tr, & div[class*="divide-y"] > div { position: relative; transition: background .2s, box-shadow .2s, transform .2s; animation: tc-row .5s cubic-bezier(.2,.8,.2,1) both; }
+  tbody tr:hover, & div[class*="divide-y"] > div:hover { background: linear-gradient(90deg, #f6f0ff, #fff 70%); box-shadow: inset 4px 0 0 #8b5cf6, 0 10px 24px -16px rgba(124,58,237,.45); transform: translateX(3px); }
+  tbody td:first-child, tbody td:first-child * { transition: letter-spacing .2s; }
+  tbody tr:hover td:first-child { letter-spacing: .04em; }
+  & tbody tr:nth-child(1), & div[class*="divide-y"] > div:nth-child(1) { animation-delay: 0.395s; }
+  & tbody tr:nth-child(2), & div[class*="divide-y"] > div:nth-child(2) { animation-delay: 0.440s; }
+  & tbody tr:nth-child(3), & div[class*="divide-y"] > div:nth-child(3) { animation-delay: 0.485s; }
+  & tbody tr:nth-child(4), & div[class*="divide-y"] > div:nth-child(4) { animation-delay: 0.530s; }
+  & tbody tr:nth-child(5), & div[class*="divide-y"] > div:nth-child(5) { animation-delay: 0.575s; }
+  & tbody tr:nth-child(6), & div[class*="divide-y"] > div:nth-child(6) { animation-delay: 0.620s; }
+  & tbody tr:nth-child(7), & div[class*="divide-y"] > div:nth-child(7) { animation-delay: 0.665s; }
+  & tbody tr:nth-child(8), & div[class*="divide-y"] > div:nth-child(8) { animation-delay: 0.710s; }
+  & tbody tr:nth-child(9), & div[class*="divide-y"] > div:nth-child(9) { animation-delay: 0.755s; }
+  & tbody tr:nth-child(10), & div[class*="divide-y"] > div:nth-child(10) { animation-delay: 0.800s; }
+  & tbody tr:nth-child(11), & div[class*="divide-y"] > div:nth-child(11) { animation-delay: 0.845s; }
+  & tbody tr:nth-child(12), & div[class*="divide-y"] > div:nth-child(12) { animation-delay: 0.890s; }
+  & tbody tr:nth-child(13), & div[class*="divide-y"] > div:nth-child(13) { animation-delay: 0.935s; }
+  & tbody tr:nth-child(14), & div[class*="divide-y"] > div:nth-child(14) { animation-delay: 0.980s; }
+  & tbody tr:nth-child(15), & div[class*="divide-y"] > div:nth-child(15) { animation-delay: 1.025s; }
+  & tbody tr:nth-child(16), & div[class*="divide-y"] > div:nth-child(16) { animation-delay: 1.070s; }
+  & tbody tr:nth-child(17), & div[class*="divide-y"] > div:nth-child(17) { animation-delay: 1.115s; }
+  & tbody tr:nth-child(18), & div[class*="divide-y"] > div:nth-child(18) { animation-delay: 1.160s; }
+  & tbody tr:nth-child(19), & div[class*="divide-y"] > div:nth-child(19) { animation-delay: 1.205s; }
+  & tbody tr:nth-child(20), & div[class*="divide-y"] > div:nth-child(20) { animation-delay: 1.250s; }
+
+  /* status / priority badges get a dot + coloured halo */
+  tbody span[class*="rounded-full"], & div[class*="divide-y"] span[class*="rounded-full"] { display: inline-flex; align-items: center; gap: 7px; transition: transform .2s;
+    &::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex: none; }
+    &:hover { transform: scale(1.08); } }
+  tbody span[class*="bg-red-"], div[class*="divide-y"] span[class*="bg-red-"] { box-shadow: 0 0 0 3px rgba(239,68,68,.12); }
+  tbody span[class*="bg-red-"]::before, div[class*="divide-y"] span[class*="bg-red-"]::before { animation: tc-pulse 1.4s ease-in-out infinite; }
+  tbody span[class*="bg-amber-"], tbody span[class*="bg-orange-"] { box-shadow: 0 0 0 3px rgba(245,158,11,.14); }
+  tbody span[class*="bg-emerald-"], tbody span[class*="bg-green-"] { box-shadow: 0 0 0 3px rgba(34,197,94,.14); }
+  tbody span[class*="bg-gray-"], tbody span[class*="bg-slate-"] { box-shadow: 0 0 0 3px rgba(148,163,184,.18); }
+
+  /* action buttons (view / edit / delete) */
+  tbody td:last-child button, & div[class*="divide-y"] > div button { transition: transform .2s, box-shadow .2s, background .2s;
+    svg { transition: transform .3s; }
+    &:hover { transform: translateY(-3px) scale(1.08); box-shadow: 0 10px 20px -8px rgba(124,58,237,.55); }
+    &:hover svg { transform: rotate(-10deg) scale(1.15); } }
+  tbody td:last-child button[class*="red"]:hover, div[class*="divide-y"] button[class*="red"]:hover { box-shadow: 0 10px 20px -8px rgba(239,68,68,.6); }
+  tbody td:last-child button[class*="blue"]:hover, div[class*="divide-y"] button[class*="blue"]:hover { box-shadow: 0 10px 20px -8px rgba(59,130,246,.6); }
+
+  ::-webkit-scrollbar { width: 10px; } ::-webkit-scrollbar-thumb { background: #cdb8fb; border-radius: 99px; }
+}

@@ -1,0 +1,114 @@
+/* Settings theme — scoped to /settings only; no JSX / logic changes.
+   Toggles are detected by shape: a <button> that contains a round white knob. */
+@keyframes st-rise { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: none; } }
+@keyframes st-flow { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+@keyframes st-shine { from { background-position: 220% 0; } to { background-position: -120% 0; } }
+@keyframes st-float { 0%,100% { translate: 0 0; } 50% { translate: 0 -7px; } }
+@keyframes st-blob { 0%,100% { translate: 0 0; scale: 1; } 50% { translate: -40px 30px; scale: 1.12; } }
+@keyframes st-gear { to { rotate: 360deg; } }
+@keyframes st-on { 0%,100% { box-shadow: 0 6px 16px -6px rgba(139,92,246,.7), 0 0 0 0 rgba(168,85,247,.4); } 50% { box-shadow: 0 8px 22px -4px rgba(168,85,247,.95), 0 0 0 7px rgba(168,85,247,0); } }
+@keyframes st-glow { 0%,100% { box-shadow: 0 12px 26px -10px rgba(124,58,237,.7); } 50% { box-shadow: 0 14px 34px -4px rgba(168,85,247,.95); } }
+
+main[data-page="/settings"] {
+  background:
+    radial-gradient(700px 380px at 95% -5%, rgba(196,164,255,.38), transparent 70%),
+    radial-gradient(560px 340px at 0% 55%, rgba(240,171,252,.16), transparent 70%), #f8f6ff;
+
+  /* ---------- banner ---------- */
+  :is(div, section)[class*="bg-gradient"][class*="text-white"] {
+    position: relative; overflow: hidden; background-image: linear-gradient(120deg, #5b21b6, #7c3aed 42%, #a855f7 75%, #d946ef) !important; background-size: 220% 220%;
+    animation: st-rise .75s both, st-flow 14s ease infinite; box-shadow: 0 30px 60px -26px rgba(109,40,217,.7);
+    &::before { content: ""; position: absolute; top: -130px; right: -70px; width: 440px; height: 440px; border-radius: 50%; background: radial-gradient(circle, rgba(255,255,255,.36), transparent 65%); pointer-events: none; animation: st-blob 12s ease-in-out infinite; }
+    &::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(110deg, transparent 40%, rgba(255,255,255,.22) 50%, transparent 60%); background-size: 250% 100%; animation: st-shine 7s infinite; }
+    > * { position: relative; z-index: 1; }
+    h1, h2 { text-shadow: 0 4px 24px rgba(40,10,90,.4); letter-spacing: -.03em; }
+    /* remove the white glass oval around the "Settings" heading */
+    [class*="rounded-full"][class*="border"], [class*="rounded-full"][class*="backdrop"], [class*="rounded-full"][class*="bg-white"] { background: transparent !important; border-color: transparent !important; box-shadow: none !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
+    div[class*="bg-white"] svg, div[class*="rounded-"] svg { animation: st-gear 14s linear infinite; }
+  }
+
+  /* ---------- cards ---------- */
+  :is(div, section, article)[class*="rounded-"][class*="bg-white"][class*="shadow"]:not([class*="rounded-full"]) { position: relative; overflow: clip; animation: st-rise .75s .1s cubic-bezier(.2,.8,.2,1) both; transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+    &::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 3px; opacity: .85; background: linear-gradient(90deg, #8b5cf6, #d946ef, #8b5cf6); background-size: 200% 100%; animation: st-flow 6s linear infinite; pointer-events: none; }
+    &:hover { border-color: #d6c1ff; box-shadow: 0 22px 46px -18px rgba(124,58,237,.32); }
+    &:hover div[class*="rounded-"][class*="p-3"] svg { transform: rotate(-12deg) scale(1.18); } }
+  :is(div, section, article)[class*="rounded-"][class*="bg-white"][class*="shadow"]:not([class*="rounded-full"]):nth-of-type(2) { animation-delay: .2s; }
+  :is(div, section, article)[class*="rounded-"][class*="bg-white"][class*="shadow"]:not([class*="rounded-full"]):nth-of-type(3) { animation-delay: .3s; }
+  :is(div, section, article)[class*="rounded-"][class*="bg-white"][class*="shadow"]:not([class*="rounded-full"]):nth-of-type(n+4) { animation-delay: .4s; }
+
+  /* icon tiles */
+  div[class*="rounded-"][class*="bg-purple-"][class*="p-3"], div[class*="rounded-"][class*="bg-violet-"][class*="p-3"], div[class*="rounded-"][class*="bg-fuchsia-"][class*="p-3"], div[class*="rounded-"][class*="bg-purple-"][class*="h-1"] { animation: st-float 4s ease-in-out infinite; box-shadow: 0 12px 24px -12px rgba(147,51,234,.6); }
+  div[class*="rounded-"] > svg { transition: transform .35s; }
+
+  /* ---------- setting rows ---------- */
+  div:has(> button:has(> span[class*="rounded-full"][class*="bg-white"])) { margin-inline: -16px; padding-inline: 16px; border-radius: 18px; transition: background .25s, transform .25s, box-shadow .25s;
+    &:hover { background: linear-gradient(90deg, rgba(245,239,255,.95), rgba(255,255,255,0) 85%); transform: translateX(4px); }
+    &:hover > :first-child > :first-child { color: #7c3aed; }
+    > :first-child > :first-child { transition: color .2s; } }
+
+  /* ---------- toggle switches ---------- */
+  button:has(> span[class*="rounded-full"][class*="bg-white"]) { position: relative; transition: background .3s, box-shadow .3s, transform .2s; cursor: pointer;
+    &:hover { transform: scale(1.07); }
+    &:focus-visible { outline: 3px solid rgba(167,139,250,.5); outline-offset: 3px; }
+    > span[class*="rounded-full"] { transition: translate .35s cubic-bezier(.34,1.56,.64,1), scale .2s, box-shadow .2s; box-shadow: 0 3px 8px rgba(40,10,90,.35); }
+    &:active > span[class*="rounded-full"] { scale: 1.22 .92; } }
+  button[role="switch"][aria-checked="true"], button:has(> span[class*="rounded-full"][class*="bg-white"])[class*="bg-purple"], button:has(> span[class*="rounded-full"][class*="bg-white"])[class*="bg-violet"], button:has(> span[class*="rounded-full"][class*="bg-white"])[class*="bg-[#"] {
+    background-image: linear-gradient(135deg, #8b5cf6, #c026d3); animation: st-on 2.6s ease-in-out infinite; }
+
+  /* ---------- inputs & buttons ---------- */
+  input[class*="border"], select, textarea { transition: border-color .2s, box-shadow .2s, background .2s; }
+  input[class*="border"]:hover, select:hover, textarea:hover { border-color: #b79cf5; }
+  input[class*="border"]:focus, select:focus, textarea:focus { border-color: #a78bfa !important; box-shadow: 0 0 0 4px rgba(167,139,250,.24); outline: none; }
+  button[type="submit"], button[class*="bg-gradient"]:not(:has(> span)) { position: relative; overflow: hidden; animation: st-glow 2.8s ease-in-out infinite; transition: transform .2s;
+    &:hover:not(:disabled) { transform: translateY(-3px); }
+    &::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(110deg, transparent 35%, rgba(255,255,255,.5) 50%, transparent 65%); background-size: 250% 100%; animation: st-shine 3.6s infinite; } }
+
+  ::-webkit-scrollbar { width: 10px; } ::-webkit-scrollbar-thumb { background: #cdb8fb; border-radius: 99px; }
+}
+
+/* FIX: Remove glass/oval container around Settings banner heading */
+main[data-page="/settings"] :is(div, section)[class*="bg-gradient"][class*="text-white"] :is(div, section)[class*="rounded-"][class*="border"],
+main[data-page="/settings"] :is(div, section)[class*="bg-gradient"][class*="text-white"] :is(div, section)[class*="backdrop-blur"],
+main[data-page="/settings"] :is(div, section)[class*="bg-gradient"][class*="text-white"] :is(div, section)[class*="bg-white"] {
+  border: none !important;
+  background: transparent !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* FINAL FIX: flatten the Settings header pill */
+main[data-page="/settings"] div[class*="bg-gradient"][class*="text-white"] div[class*="rounded-full"] {
+  border-radius: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  outline: none !important;
+}
+
+main[data-page="/settings"] div[class*="bg-gradient"][class*="text-white"] div[class*="rounded-full"]::before,
+main[data-page="/settings"] div[class*="bg-gradient"][class*="text-white"] div[class*="rounded-full"]::after {
+  display: none !important;
+  content: none !important;
+}
+
+/* Definitive Settings heading wrapper reset */
+main[data-page="/settings"] .settings-heading-row {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  width: fit-content !important;
+  max-width: 100% !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: none !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  outline: none !important;
+}

@@ -1,0 +1,80 @@
+/* Help Center theme — scoped to /help-support only; no JSX / logic changes. */
+@keyframes hc-rise { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: none; } }
+@keyframes hc-flow { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+@keyframes hc-shine { from { background-position: 220% 0; } to { background-position: -120% 0; } }
+@keyframes hc-float { 0%,100% { translate: 0 0; } 50% { translate: 0 -8px; } }
+@keyframes hc-blob { 0%,100% { translate: 0 0; scale: 1; } 50% { translate: -40px 30px; scale: 1.12; } }
+@keyframes hc-glow { 0%,100% { box-shadow: 0 12px 26px -10px rgba(168,85,247,.7); } 50% { box-shadow: 0 14px 36px -4px rgba(217,70,239,.95); } }
+@keyframes hc-open { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
+@keyframes hc-spin { to { rotate: 360deg; } }
+
+main[data-page="/help-support"] {
+  background:
+    radial-gradient(700px 380px at 95% -5%, rgba(196,164,255,.38), transparent 70%),
+    radial-gradient(560px 340px at 0% 55%, rgba(240,171,252,.16), transparent 70%), #f8f6ff;
+
+  /* ---------- hero banner ---------- */
+  :is(div, section)[class*="bg-gradient"][class*="text-white"] {
+    position: relative; overflow: hidden; background-image: linear-gradient(120deg, #6d28d9, #9333ea 40%, #c026d3 75%, #e879f9) !important; background-size: 220% 220%;
+    animation: hc-rise .75s both, hc-flow 14s ease infinite; box-shadow: 0 30px 60px -26px rgba(147,51,234,.7);
+    &::before { content: ""; position: absolute; top: -130px; right: -70px; width: 440px; height: 440px; border-radius: 50%; background: radial-gradient(circle, rgba(255,255,255,.38), transparent 65%); pointer-events: none; animation: hc-blob 12s ease-in-out infinite; }
+    &::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(110deg, transparent 40%, rgba(255,255,255,.22) 50%, transparent 60%); background-size: 250% 100%; animation: hc-shine 7s infinite; }
+    > * { position: relative; z-index: 1; }
+    h1, h2 { text-shadow: 0 4px 24px rgba(40,10,90,.4); letter-spacing: -.03em; }
+    svg { filter: drop-shadow(0 2px 8px rgba(255,255,255,.4)); }
+    /* search pill */
+    div:has(> input):focus-within { box-shadow: 0 0 0 5px rgba(255,255,255,.35), 0 22px 44px -12px rgba(40,10,90,.45); transform: translateY(-3px); }
+    div:has(> input) { transition: box-shadow .25s, transform .25s; }
+    div:has(> input) > svg { transition: transform .3s; } div:has(> input):focus-within > svg { transform: scale(1.2) rotate(-8deg); }
+  }
+
+  /* ---------- cards ---------- */
+  :is(div, section, article)[class*="rounded-"][class*="bg-white"][class*="shadow"]:not([class*="rounded-full"]) { position: relative; overflow: clip; animation: hc-rise .75s .1s cubic-bezier(.2,.8,.2,1) both; transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+    &::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 3px; opacity: .85; background: linear-gradient(90deg, #8b5cf6, #d946ef, #8b5cf6); background-size: 200% 100%; animation: hc-flow 6s linear infinite; pointer-events: none; }
+    &:hover { border-color: #d6c1ff; box-shadow: 0 22px 46px -18px rgba(124,58,237,.32); }
+    &:hover div[class*="rounded-"][class*="p-3"] svg { transform: rotate(-10deg) scale(1.15); } }
+  :is(div, section, article)[class*="rounded-"][class*="bg-white"][class*="shadow"]:not([class*="rounded-full"]):nth-child(2) { animation-delay: .2s; }
+  :is(div, section, article)[class*="rounded-"][class*="bg-white"][class*="shadow"]:not([class*="rounded-full"]):nth-child(n+3) { animation-delay: .3s; }
+
+  /* icon tiles */
+  div[class*="rounded-"][class*="bg-purple-"][class*="p-3"], div[class*="rounded-"][class*="bg-violet-"][class*="p-3"], div[class*="rounded-"][class*="bg-fuchsia-"][class*="p-3"] { animation: hc-float 4s ease-in-out infinite; box-shadow: 0 12px 24px -12px rgba(147,51,234,.6); }
+  div[class*="rounded-"][class*="p-3"] svg { transition: transform .35s; }
+
+  /* ---------- FAQ accordion ---------- */
+  div:has(> button[class*="justify-between"][class*="w-full"]) { position: relative; animation: hc-rise .6s cubic-bezier(.2,.8,.2,1) both; transition: transform .22s, box-shadow .22s, border-color .22s, background .22s;
+    &::before { content: ""; position: absolute; left: 0; top: 14%; bottom: 14%; width: 4px; border-radius: 0 4px 4px 0; background: linear-gradient(#8b5cf6, #d946ef); transform: scaleY(0); transition: transform .28s; }
+    &:hover { transform: translateX(6px); border-color: #d6c1ff; background: #fcfaff; box-shadow: 0 14px 30px -18px rgba(124,58,237,.5); }
+    &:hover::before { transform: scaleY(1); } }
+  div:has(> button[class*="justify-between"][class*="w-full"]):nth-child(1) { animation-delay: 0.36s; }
+  div:has(> button[class*="justify-between"][class*="w-full"]):nth-child(2) { animation-delay: 0.42s; }
+  div:has(> button[class*="justify-between"][class*="w-full"]):nth-child(3) { animation-delay: 0.48s; }
+  div:has(> button[class*="justify-between"][class*="w-full"]):nth-child(4) { animation-delay: 0.54s; }
+  div:has(> button[class*="justify-between"][class*="w-full"]):nth-child(5) { animation-delay: 0.60s; }
+  div:has(> button[class*="justify-between"][class*="w-full"]):nth-child(6) { animation-delay: 0.66s; }
+  div:has(> button[class*="justify-between"][class*="w-full"]):nth-child(7) { animation-delay: 0.72s; }
+  div:has(> button[class*="justify-between"][class*="w-full"]):nth-child(8) { animation-delay: 0.78s; }
+  div:has(> button[class*="justify-between"][class*="w-full"]):nth-child(9) { animation-delay: 0.84s; }
+  div:has(> button[class*="justify-between"][class*="w-full"]):nth-child(10) { animation-delay: 0.90s; }
+  div:has(> button[class*="justify-between"][class*="w-full"]):nth-child(11) { animation-delay: 0.96s; }
+  div:has(> button[class*="justify-between"][class*="w-full"]):nth-child(12) { animation-delay: 1.02s; }
+
+  button[class*="justify-between"][class*="w-full"] { transition: color .2s; }
+  button[class*="justify-between"][class*="w-full"]:hover { color: #7c3aed; }
+  button[class*="justify-between"][class*="w-full"] svg { transition: transform .3s, color .2s; }
+  button[class*="justify-between"][class*="w-full"]:hover svg { color: #d946ef; }
+  button[class*="justify-between"][class*="w-full"] + * { animation: hc-open .35s ease both; }
+
+  /* ---------- contact form ---------- */
+  input[class*="border"], textarea, select { transition: border-color .2s, box-shadow .2s, background .2s; }
+  input[class*="border"]:hover, textarea:hover, select:hover { border-color: #b79cf5; background: #fff; }
+  input[class*="border"]:focus, textarea:focus, select:focus { border-color: #a78bfa !important; background: #fff; box-shadow: 0 0 0 4px rgba(167,139,250,.24); outline: none; }
+  label { transition: color .2s; }
+  button[type="submit"], button[class*="w-full"][class*="bg-gradient"] { position: relative; overflow: hidden; background-size: 200% 100%; animation: hc-glow 2.8s ease-in-out infinite; transition: transform .2s;
+    &:hover:not(:disabled) { transform: translateY(-3px); }
+    &:active:not(:disabled) { transform: translateY(0) scale(.98); }
+    &::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(110deg, transparent 35%, rgba(255,255,255,.5) 50%, transparent 65%); background-size: 250% 100%; animation: hc-shine 3.6s infinite; }
+    svg { transition: transform .35s; }
+    &:hover svg { transform: translate(5px, -4px) rotate(8deg); } }
+
+  ::-webkit-scrollbar { width: 10px; } ::-webkit-scrollbar-thumb { background: #cdb8fb; border-radius: 99px; }
+}

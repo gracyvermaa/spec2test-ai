@@ -82,7 +82,7 @@ function Settings() {
         <div className="mx-auto max-w-5xl">
 
           <div className="mb-8">
-            <div className="flex items-center gap-3">
+            <div className="settings-heading-row flex items-center gap-3">
               <div className="rounded-xl bg-purple-100 p-3 text-purple-600">
                 <SettingsIcon size={23} />
               </div>
@@ -221,3 +221,5 @@ function Settings() {
 }
 
 export default Settings;
+
+

@@ -1,4 +1,4 @@
-﻿
+
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useState } from "react";
 import {
@@ -360,7 +360,7 @@ function ProjectDetails() {
               </button>
 
               <p className="mt-3 text-xs text-purple-400">
-                Demo mode Ã‚Â· Sample AI results Ã‚Â· No API usage
+                Demo mode · Sample AI results · No API usage
               </p>
             </div>
 
@@ -425,7 +425,7 @@ function ProjectDetails() {
                             key={index}
                             className="flex gap-2 text-sm text-[#62588A]"
                           >
-                            <span className="text-purple-500">Ã¢â‚¬Â¢</span>
+                            <span className="text-purple-500">•</span>
                             {item}
                           </li>
                         ))
@@ -651,7 +651,7 @@ function ProjectDetails() {
                   >
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <h3 className="font-semibold text-[#35265E]">
-                        {risk.risk_id} Ã‚Â· {risk.title}
+                        {risk.risk_id} · {risk.title}
                       </h3>
 
                       <span
@@ -717,7 +717,7 @@ function ProjectDetails() {
                         key={index}
                         className="flex gap-2 text-sm text-amber-800"
                       >
-                        <span>Ã¢â‚¬Â¢</span>
+                        <span>•</span>
                         {gap}
                       </li>
                     )
