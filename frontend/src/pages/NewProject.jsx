@@ -1,7 +1,8 @@
-
+﻿
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Sparkles, FileText } from "lucide-react";
+import { runWorkflow } from "../services/api";
 
 function NewProject() {
   const navigate = useNavigate();
@@ -144,7 +145,7 @@ function NewProject() {
               className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-purple-600 to-violet-500 px-5 py-3 font-semibold text-white shadow-md transition hover:-translate-y-0.5 hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-70"
             >
               <Sparkles size={18} />
-              {loading ? "Creating Project..." : "Analyze Requirements with AI"}
+              {loading ? "Analyzing Requirements & Generating..." : "Analyze Requirements with AI"}
             </button>
 
           </form>
@@ -158,3 +159,4 @@ function NewProject() {
 }
 
 export default NewProject;
+
