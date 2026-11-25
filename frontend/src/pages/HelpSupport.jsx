@@ -1,6 +1,7 @@
 import { useState } from "react";
 import DashboardLayout from "../layouts/DashboardLayout";
 import { Search, LifeBuoy, BookOpen, MessageCircle, ChevronDown, Send, Sparkles } from "lucide-react";
+import { userStorage } from "../utils/userStorage";
 
 const faqs = [
   {
@@ -48,13 +49,13 @@ function HelpSupport() {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!message.trim()) return;
-    const requests = JSON.parse(localStorage.getItem("spec2test-support") || "[]");
+    const requests = JSON.parse(userStorage.getItem("spec2test-support") || "[]");
     requests.push({
       email,
       message,
       date: new Date().toISOString()
     });
-    localStorage.setItem("spec2test-support", JSON.stringify(requests));
+    userStorage.setItem("spec2test-support", JSON.stringify(requests));
     setMessage("");
     setSent(true);
     setTimeout(() => setSent(false), 4000);

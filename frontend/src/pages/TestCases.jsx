@@ -14,11 +14,12 @@ import {
   FolderOpen,
 } from "lucide-react";
 import DashboardLayout from "../layouts/DashboardLayout";
+import { userStorage } from "../utils/userStorage";
 
 const PROJECTS_KEY = "spec2test_projects";
 
 const loadProjects = () =>
-  JSON.parse(localStorage.getItem(PROJECTS_KEY) || "[]");
+  JSON.parse(userStorage.getItem(PROJECTS_KEY) || "[]");
 
 function TestCases() {
   const [projects, setProjects] = useState(loadProjects);
@@ -34,7 +35,7 @@ function TestCases() {
     const saved = {};
     loadProjects().forEach((project) => {
       saved[project.id] = JSON.parse(
-        localStorage.getItem(`spec2test_status_${project.id}`) || "{}"
+        userStorage.getItem(`spec2test_status_${project.id}`) || "{}"
       );
     });
     return saved;
@@ -48,7 +49,7 @@ function TestCases() {
       const latestStatuses = {};
       latestProjects.forEach((project) => {
         latestStatuses[project.id] = JSON.parse(
-          localStorage.getItem(`spec2test_status_${project.id}`) || "{}"
+          userStorage.getItem(`spec2test_status_${project.id}`) || "{}"
         );
       });
       setStatuses(latestStatuses);
@@ -108,7 +109,7 @@ function TestCases() {
   };
 
   const saveProjects = (updated) => {
-    localStorage.setItem(PROJECTS_KEY, JSON.stringify(updated));
+    userStorage.setItem(PROJECTS_KEY, JSON.stringify(updated));
     setProjects(updated);
     window.dispatchEvent(new Event("spec2test-projects-updated"));
   };
@@ -126,7 +127,7 @@ function TestCases() {
       [test.test_case_id]: newStatus,
     };
 
-    localStorage.setItem(
+    userStorage.setItem(
       `spec2test_status_${test.projectId}`,
       JSON.stringify(projectStatuses)
     );

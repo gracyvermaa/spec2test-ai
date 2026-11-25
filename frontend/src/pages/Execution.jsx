@@ -13,16 +13,17 @@ import {
   RotateCcw,
   AlertTriangle,
 } from "lucide-react";
+import { userStorage } from "../utils/userStorage";
 
 const RUNS_KEY = "spec2test_execution_runs";
 const DEFECTS_KEY = "spec2test_defects";
 const EXPANDED_DEFECTS_KEY = "spec2test_expanded_defects";
 
 function Execution() {
-  const [projects, setProjects] = useState(() => JSON.parse(localStorage.getItem("spec2test_projects") || "[]"));
+  const [projects, setProjects] = useState(() => JSON.parse(userStorage.getItem("spec2test_projects") || "[]"));
   const [selectedProjectId, setSelectedProjectId] = useState(() => {
-    const savedProjects = JSON.parse(localStorage.getItem("spec2test_projects") || "[]");
-    const savedRuns = JSON.parse(localStorage.getItem(RUNS_KEY) || "[]");
+    const savedProjects = JSON.parse(userStorage.getItem("spec2test_projects") || "[]");
+    const savedRuns = JSON.parse(userStorage.getItem(RUNS_KEY) || "[]");
 
     const latestRun = savedRuns
       .filter((run) => run.status === "Completed")
@@ -38,18 +39,18 @@ function Execution() {
 
     return firstAnalyzed ? String(firstAnalyzed.id) : "";
   });
-  const [runs, setRuns] = useState(() => JSON.parse(localStorage.getItem(RUNS_KEY) || "[]"));
+  const [runs, setRuns] = useState(() => JSON.parse(userStorage.getItem(RUNS_KEY) || "[]"));
   const [isRunning, setIsRunning] = useState(false);
   const [currentResults, setCurrentResults] = useState({});
   const [currentRun, setCurrentRun] = useState(null);
   const [selectedTest, setSelectedTest] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [viewHistory, setViewHistory] = useState(false);
-  const [defects, setDefects] = useState(() => JSON.parse(localStorage.getItem(DEFECTS_KEY) || "[]"));
+  const [defects, setDefects] = useState(() => JSON.parse(userStorage.getItem(DEFECTS_KEY) || "[]"));
   const [defectSearch, setDefectSearch] = useState("");
   const [defectStatusFilter, setDefectStatusFilter] = useState("All");
   const [expandedDefectIds, setExpandedDefectIds] = useState(() =>
-    JSON.parse(localStorage.getItem(EXPANDED_DEFECTS_KEY) || "[]")
+    JSON.parse(userStorage.getItem(EXPANDED_DEFECTS_KEY) || "[]")
   );
   useEffect(() => {
     if (!selectedProjectId) {
@@ -129,18 +130,18 @@ const selectedProject = projects.find(
 
   const saveRuns = (updatedRuns) => {
     setRuns(updatedRuns);
-    localStorage.setItem(RUNS_KEY, JSON.stringify(updatedRuns));
+    userStorage.setItem(RUNS_KEY, JSON.stringify(updatedRuns));
   };
   const saveDefects = (updatedDefects) => {
     setDefects(updatedDefects);
-    localStorage.setItem(DEFECTS_KEY, JSON.stringify(updatedDefects));
+    userStorage.setItem(DEFECTS_KEY, JSON.stringify(updatedDefects));
   };
 
   const createDefectsForRun = (run, failedResults) => {
     if (!failedResults.length) return;
 
     const existingDefects = JSON.parse(
-      localStorage.getItem(DEFECTS_KEY) || "[]"
+      userStorage.getItem(DEFECTS_KEY) || "[]"
     );
 
     let updatedDefects = [...existingDefects];
@@ -873,7 +874,7 @@ const selectedProject = projects.find(
                               ? [...new Set([...previous, defect.id])]
                               : previous.filter((id) => id !== defect.id);
 
-                            localStorage.setItem(
+                            userStorage.setItem(
                               EXPANDED_DEFECTS_KEY,
                               JSON.stringify(next)
                             );

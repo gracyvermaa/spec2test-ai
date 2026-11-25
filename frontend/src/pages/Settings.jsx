@@ -10,6 +10,7 @@ import {
   Sparkles,
   ShieldCheck
 } from "lucide-react";
+import { userStorage } from "../utils/userStorage";
 
 const defaultSettings = {
   notifications: true,
@@ -23,7 +24,7 @@ function Settings() {
   const navigate = useNavigate();
 
   const [settings, setSettings] = useState(() => {
-    const saved = localStorage.getItem("spec2test-settings");
+    const saved = userStorage.getItem("spec2test-settings");
     return saved ? { ...defaultSettings, ...JSON.parse(saved) } : defaultSettings;
   });
 
@@ -38,14 +39,14 @@ function Settings() {
   };
 
   const saveSettings = () => {
-    localStorage.setItem("spec2test-settings", JSON.stringify(settings));
+    userStorage.setItem("spec2test-settings", JSON.stringify(settings));
     setSavedMessage(true);
     setTimeout(() => setSavedMessage(false), 3500);
   };
 
   const resetSettings = () => {
     setSettings(defaultSettings);
-    localStorage.setItem("spec2test-settings", JSON.stringify(defaultSettings));
+    userStorage.setItem("spec2test-settings", JSON.stringify(defaultSettings));
     setSavedMessage(false);
   };
 

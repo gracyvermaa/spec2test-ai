@@ -12,12 +12,13 @@ import {
   Check,
   X,
 } from "lucide-react";
+import { userStorage } from "../utils/userStorage";
 
 function RecentProjects({ searchTerm = "" }) {
   const navigate = useNavigate();
 
   const [projects, setProjects] = useState(() =>
-    JSON.parse(localStorage.getItem("spec2test_projects") || "[]")
+    JSON.parse(userStorage.getItem("spec2test_projects") || "[]")
   );
 
   const [menuId, setMenuId] = useState(null);
@@ -27,7 +28,7 @@ function RecentProjects({ searchTerm = "" }) {
 
   const saveProjects = (updated) => {
     setProjects(updated);
-    localStorage.setItem("spec2test_projects", JSON.stringify(updated));
+    userStorage.setItem("spec2test_projects", JSON.stringify(updated));
     window.dispatchEvent(new Event("spec2test-projects-updated"));
   };
 

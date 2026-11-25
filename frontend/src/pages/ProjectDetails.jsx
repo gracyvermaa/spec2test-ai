@@ -1,5 +1,5 @@
 
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useState } from "react";
 import {
   ArrowLeft,
@@ -16,22 +16,24 @@ import {
   Download,
 } from "lucide-react";
 import { runWorkflow } from "../services/api";
+import { userStorage } from "../utils/userStorage";
 
 function ProjectDetails() {
   const navigate = useNavigate();
   const { id } = useParams();
-  const location = useLocation();
 
   const [project, setProject] = useState(() => {
     const projects = JSON.parse(
-      localStorage.getItem("spec2test_projects") || "[]"
+      userStorage.getItem("spec2test_projects") || "[]"
     );
 
     const savedProject = projects.find(
       (item) => String(item.id) === id
     );
 
-    return savedProject || location.state?.project;
+    // Only this account's saved projects are trusted. Router history state is ignored:
+    // after an account switch it can still hold the previous account's project.
+    return savedProject;
   });
 
   const [results, setResults] = useState(project?.analysisResults || null);
@@ -43,7 +45,7 @@ function ProjectDetails() {
   const [searchTerm, setSearchTerm] = useState("");
   const [testStatuses, setTestStatuses] = useState(() => {
     return JSON.parse(
-      localStorage.getItem(`spec2test_status_${id}`) || "{}"
+      userStorage.getItem(`spec2test_status_${id}`) || "{}"
     );
   });
 
@@ -55,7 +57,7 @@ function ProjectDetails() {
 
     setTestStatuses(updatedStatuses);
 
-    localStorage.setItem(
+    userStorage.setItem(
       `spec2test_status_${id}`,
       JSON.stringify(updatedStatuses)
     );
@@ -172,7 +174,7 @@ function ProjectDetails() {
       setProject(updatedProject);
 
       const savedProjects = JSON.parse(
-        localStorage.getItem("spec2test_projects") || "[]"
+        userStorage.getItem("spec2test_projects") || "[]"
       );
 
       const updatedProjects = savedProjects.map((item) =>
@@ -181,7 +183,7 @@ function ProjectDetails() {
           : item
       );
 
-      localStorage.setItem(
+      userStorage.setItem(
         "spec2test_projects",
         JSON.stringify(updatedProjects)
       );

@@ -6,6 +6,7 @@ import {
   ResponsiveContainer,
   Tooltip,
 } from "recharts";
+import { userStorage } from "../utils/userStorage";
 
 const CATEGORIES = [
   { name: "Draft", color: "#C4B5FD" },
@@ -32,7 +33,7 @@ function classifyProject(project) {
   const ambiguities = analysis?.ambiguous_requirements || [];
 
   const statuses = JSON.parse(
-    localStorage.getItem(`spec2test_status_${project.id}`) || "{}"
+    userStorage.getItem(`spec2test_status_${project.id}`) || "{}"
   );
 
   const executed = tests.filter((test) =>
@@ -64,7 +65,7 @@ function classifyProject(project) {
 
 function getProjectStatusData() {
   const projects = JSON.parse(
-    localStorage.getItem("spec2test_projects") || "[]"
+    userStorage.getItem("spec2test_projects") || "[]"
   );
 
   const counts = Object.fromEntries(

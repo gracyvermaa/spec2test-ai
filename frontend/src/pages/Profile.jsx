@@ -2,12 +2,12 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import DashboardLayout from "../layouts/DashboardLayout";
 import { ArrowLeft, User, Mail, Briefcase, Save, Sparkles } from "lucide-react";
+import { userStorage, getCurrentUser } from "../utils/userStorage";
 
-const defaultProfile = {
-  name: "Gracy Verma",
-  email: "",
-  role: "AI Engineer",
-  bio: "Building intelligent solutions with AI, machine learning, and software development."
+// A new account starts with its own name/email and an otherwise empty profile.
+const makeDefaultProfile = () => {
+  const account = getCurrentUser();
+  return { name: account?.name || "", email: account?.email || "", role: "", bio: "" };
 };
 
 function Profile() {
@@ -15,8 +15,8 @@ function Profile() {
   const [showToast, setShowToast] = useState(false);
 
   const [profile, setProfile] = useState(() => {
-    const saved = localStorage.getItem("spec2test-profile");
-    return saved ? JSON.parse(saved) : defaultProfile;
+    const saved = userStorage.getItem("spec2test-profile");
+    return saved ? JSON.parse(saved) : makeDefaultProfile();
   });
 
   const handleChange = (e) => {
@@ -24,7 +24,7 @@ function Profile() {
   };
 
   const handleSave = () => {
-    localStorage.setItem("spec2test-profile", JSON.stringify(profile));
+    userStorage.setItem("spec2test-profile", JSON.stringify(profile));
     setShowToast(true);
     setTimeout(() => setShowToast(false), 3500);
   };
@@ -68,7 +68,7 @@ function Profile() {
             <div className="bg-gradient-to-r from-purple-600 via-violet-500 to-fuchsia-500 p-8 text-white">
               <div className="flex items-center gap-5">
                 <div className="flex h-24 w-24 items-center justify-center rounded-full border-4 border-white/40 bg-white/20 text-4xl font-bold shadow-lg backdrop-blur">
-                  {profile.name.charAt(0).toUpperCase() || "G"}
+                  {profile.name.charAt(0).toUpperCase() || "U"}
                 </div>
 
                 <div>

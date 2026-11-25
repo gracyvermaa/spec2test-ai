@@ -6,10 +6,11 @@ import {
   XCircle,
   Activity,
 } from "lucide-react";
+import { userStorage } from "../utils/userStorage";
 
 function getDashboardStats() {
   const projects = JSON.parse(
-    localStorage.getItem("spec2test_projects") || "[]"
+    userStorage.getItem("spec2test_projects") || "[]"
   );
 
   let totalTestCases = 0;
@@ -23,7 +24,7 @@ function getDashboardStats() {
     totalTestCases += testCases.length;
 
     const statuses = JSON.parse(
-      localStorage.getItem(`spec2test_status_${project.id}`) || "{}"
+      userStorage.getItem(`spec2test_status_${project.id}`) || "{}"
     );
 
     testCases.forEach((test) => {

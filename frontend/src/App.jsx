@@ -11,23 +11,26 @@ import TestCases from "./pages/TestCases";
 import Profile from "./pages/Profile";
 import HelpSupport from "./pages/HelpSupport";
 import Settings from "./pages/Settings";
+import { AccountBoundary, RequireAuth } from "./components/AccountGuards";
 
 function App() {
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/new-project" element={<NewProject />} />
-        <Route path="/project/:id" element={<ProjectDetails />} />
-        <Route path="/projects" element={<Projects />} />
-        <Route path="/reports" element={<Reports />} />
-        <Route path="/execution" element={<Execution />} />
-        <Route path="/test-cases" element={<TestCases />} />
-<Route path="/profile" element={<Profile />} />
-<Route path="/help-support" element={<HelpSupport />} />
-<Route path="/settings" element={<Settings />} />
-      </Routes>
+      <AccountBoundary>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/dashboard" element={<RequireAuth><Dashboard /></RequireAuth>} />
+          <Route path="/new-project" element={<RequireAuth><NewProject /></RequireAuth>} />
+          <Route path="/project/:id" element={<RequireAuth><ProjectDetails /></RequireAuth>} />
+          <Route path="/projects" element={<RequireAuth><Projects /></RequireAuth>} />
+          <Route path="/reports" element={<RequireAuth><Reports /></RequireAuth>} />
+          <Route path="/execution" element={<RequireAuth><Execution /></RequireAuth>} />
+          <Route path="/test-cases" element={<RequireAuth><TestCases /></RequireAuth>} />
+          <Route path="/profile" element={<RequireAuth><Profile /></RequireAuth>} />
+          <Route path="/help-support" element={<RequireAuth><HelpSupport /></RequireAuth>} />
+          <Route path="/settings" element={<RequireAuth><Settings /></RequireAuth>} />
+        </Routes>
+      </AccountBoundary>
     </BrowserRouter>
   );
 }

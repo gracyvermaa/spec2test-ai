@@ -13,6 +13,7 @@ import {
   RotateCcw,
   AlertTriangle,
 } from "lucide-react";
+import { userStorage } from "../utils/userStorage";
 
 const RUNS_KEY = "spec2test_execution_runs";
 
@@ -29,9 +30,9 @@ function Execution() {
 
   useEffect(() => {
     const savedProjects = JSON.parse(
-      localStorage.getItem("spec2test_projects") || "[]"
+      userStorage.getItem("spec2test_projects") || "[]"
     );
-    const savedRuns = JSON.parse(localStorage.getItem(RUNS_KEY) || "[]");
+    const savedRuns = JSON.parse(userStorage.getItem(RUNS_KEY) || "[]");
 
     setProjects(savedProjects);
     setRuns(savedRuns);
@@ -74,7 +75,7 @@ function Execution() {
 
   const saveRuns = (updatedRuns) => {
     setRuns(updatedRuns);
-    localStorage.setItem(RUNS_KEY, JSON.stringify(updatedRuns));
+    userStorage.setItem(RUNS_KEY, JSON.stringify(updatedRuns));
   };
 
   const startExecution = async () => {

@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import DashboardLayout from "../layouts/DashboardLayout";
 
@@ -11,6 +11,7 @@ import ProjectStatusDistribution from "../components/ProjectStatusDistribution";
 
 import { Bell, Search, Sparkles, CheckCheck, FolderOpen, X } from "lucide-react";
 import "./Dashboard.css";
+import { userStorage, getCurrentUser } from "../utils/userStorage";
 
 function getGreeting() {
   const hour = new Date().getHours();
@@ -21,7 +22,7 @@ function getGreeting() {
 
 function getProjects() {
   try {
-    return JSON.parse(localStorage.getItem("spec2test_projects") || "[]");
+    return JSON.parse(userStorage.getItem("spec2test_projects") || "[]");
   } catch {
     return [];
   }
@@ -29,7 +30,7 @@ function getProjects() {
 
 function getReadNotifications() {
   try {
-    return JSON.parse(localStorage.getItem("spec2test_read_notifications") || "[]");
+    return JSON.parse(userStorage.getItem("spec2test_read_notifications") || "[]");
   } catch {
     return [];
   }
@@ -49,8 +50,19 @@ function formatNotificationDate(date) {
   });
 }
 
+function getDisplayName() {
+  const account = getCurrentUser();
+  try {
+    const profile = JSON.parse(userStorage.getItem("spec2test-profile") || "null");
+    return String(profile?.name || "").trim() || account?.name || "there";
+  } catch {
+    return account?.name || "there";
+  }
+}
+
 function Dashboard() {
   const navigate = useNavigate();
+  const displayName = getDisplayName();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [projects, setProjects] = useState(getProjects);
@@ -144,7 +156,7 @@ function Dashboard() {
     const updated = [...new Set([...readNotifications, notificationId])];
 
     setReadNotifications(updated);
-    localStorage.setItem(
+    userStorage.setItem(
       "spec2test_read_notifications",
       JSON.stringify(updated)
     );
@@ -157,7 +169,7 @@ function Dashboard() {
     ])];
 
     setReadNotifications(updated);
-    localStorage.setItem(
+    userStorage.setItem(
       "spec2test_read_notifications",
       JSON.stringify(updated)
     );
@@ -187,7 +199,7 @@ function Dashboard() {
               </span>
 
               <h1 className="mt-3 text-3xl font-extrabold tracking-tight text-[#211A4B]">
-                {getGreeting()}, <span className="dash-name">Gracy Verma</span>{" "}
+                {getGreeting()}, <span className="dash-name">{displayName}</span>{" "}
                 <span className="dash-wave">{"\u{1F44B}"}</span>
               </h1>
             </div>
@@ -397,7 +409,7 @@ function Dashboard() {
                 title="Edit Profile"
                 className="dash-avatar flex h-11 w-11 cursor-pointer items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-fuchsia-500 font-bold text-white shadow transition hover:scale-105"
               >
-                G
+                {displayName.charAt(0).toUpperCase() || "U"}
               </button>
             </div>
           </header>

@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Sparkles, FileText } from "lucide-react";
 import { runWorkflow } from "../services/api";
+import { userStorage } from "../utils/userStorage";
 
 function NewProject() {
   const navigate = useNavigate();
@@ -32,10 +33,10 @@ function NewProject() {
     };
 
     const existingProjects = JSON.parse(
-      localStorage.getItem("spec2test_projects") || "[]"
+      userStorage.getItem("spec2test_projects") || "[]"
     );
 
-    localStorage.setItem(
+    userStorage.setItem(
       "spec2test_projects",
       JSON.stringify([project, ...existingProjects])
     );

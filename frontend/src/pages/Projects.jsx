@@ -15,10 +15,11 @@ import {
 } from "lucide-react";
 import DashboardLayout from "../layouts/DashboardLayout";
 import "./Projects.css";
+import { userStorage } from "../utils/userStorage";
 
 function loadProjects() {
   try {
-    const data = JSON.parse(localStorage.getItem("spec2test_projects") || "[]");
+    const data = JSON.parse(userStorage.getItem("spec2test_projects") || "[]");
     return Array.isArray(data) ? data : [];
   } catch {
     return [];

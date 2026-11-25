@@ -1,5 +1,5 @@
-﻿import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import "./Hero.css";
 
 const Spark = ({ size = 24 }) => (
@@ -17,10 +17,11 @@ const Check = () => (
   <span className="chk"><Ico size={12}><path d="m5 12 5 5 9-10" /></Ico></span>
 );
 
-const MSGS = ["Testing workflow in progressâ€¦", "Analyzing requirementsâ€¦", "Generating test casesâ€¦", "Detecting risksâ€¦", "Calculating coverageâ€¦"];
+const MSGS = ["Testing workflow in progress\u2026", "Analyzing requirements\u2026", "Generating test cases\u2026", "Detecting risks\u2026", "Calculating coverage\u2026"];
 
 export default function Hero({ onStart, onDemo }) {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [authUser, setAuthUser] = useState(() => {
     try {
@@ -31,7 +32,9 @@ export default function Hero({ onStart, onDemo }) {
   });
 
   const [userMenuOpen, setUserMenuOpen] = useState(false);
-  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [authModalOpen, setAuthModalOpen] = useState(
+    () => Boolean(location.state?.requireLogin) && !authUser
+  );
   const [authMode, setAuthMode] = useState("login");
   const [authName, setAuthName] = useState("");
   const [authEmail, setAuthEmail] = useState("");
@@ -79,6 +82,7 @@ export default function Hero({ onStart, onDemo }) {
       setAuthModalOpen(false);
       setUserMenuOpen(false);
       window.dispatchEvent(new Event("spec2test-auth-updated"));
+      if (location.state?.from) navigate(location.state.from, { replace: true });
       return;
     }
 
@@ -99,6 +103,7 @@ export default function Hero({ onStart, onDemo }) {
     setAuthModalOpen(false);
     setUserMenuOpen(false);
     window.dispatchEvent(new Event("spec2test-auth-updated"));
+    if (location.state?.from) navigate(location.state.from, { replace: true });
   };
   useEffect(() => {
     if (!authModalOpen) return;
@@ -183,7 +188,7 @@ export default function Hero({ onStart, onDemo }) {
       <div className="hero-grid">
         {/* LEFT */}
         <div className="copy">
-          <span className="badge"><Spark size={18} /> AI-Powered Testing Platform <small>â€º</small></span>
+          <span className="badge"><Spark size={18} /> AI-Powered Testing Platform <small>{"\u203A"}</small></span>
           <h1>
             Testing, made
             <span className="accent">intelligent.<Spark size={34} /></span>

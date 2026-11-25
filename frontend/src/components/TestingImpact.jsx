@@ -7,13 +7,14 @@ import {
   Area,
   AreaChart,
 } from "recharts";
+import { userStorage } from "../utils/userStorage";
 
 const PROJECTS_KEY = "spec2test_projects";
 const UPDATE_EVENT = "spec2test-projects-updated";
 
 function readProjects() {
   try {
-    return JSON.parse(localStorage.getItem(PROJECTS_KEY) || "[]");
+    return JSON.parse(userStorage.getItem(PROJECTS_KEY) || "[]");
   } catch {
     return [];
   }
