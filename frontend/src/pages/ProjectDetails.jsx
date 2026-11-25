@@ -187,7 +187,10 @@ function ProjectDetails() {
       );
       window.dispatchEvent(new Event("spec2test-projects-updated"));
     } catch (err) {
-      setError("Something went wrong while analyzing this project.");
+      setError(
+        err.userMessage ||
+          "Something went wrong while analyzing this project."
+      );
       console.error(err);
     } finally {
       setLoading(false);

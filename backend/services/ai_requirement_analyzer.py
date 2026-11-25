@@ -1,26 +1,38 @@
 
 import os
 
-from dotenv import load_dotenv
-from google import genai
-from google.genai import types
-
+import config
 from schemas.requirement import RequirementAnalysis
+from services.mock_ai import mock_analyze_requirement
 
-# Load API key from backend/.env
-load_dotenv(
-    os.path.join(os.path.dirname(__file__), "..", ".env")
-)
+_client = None
 
-api_key = os.getenv("GEMINI_API_KEY")
 
-if not api_key:
-    raise ValueError("GEMINI_API_KEY is missing from backend/.env")
+def get_client():
+    """Create the Gemini client on first use (live mode only)."""
+    global _client
 
-client = genai.Client(api_key=api_key)
+    if _client is None:
+        api_key = os.getenv("GEMINI_API_KEY")
+
+        if not api_key:
+            raise ValueError(
+                "AI_MODE=live requires GEMINI_API_KEY to be set."
+            )
+
+        from google import genai
+
+        _client = genai.Client(api_key=api_key)
+
+    return _client
 
 
 def analyze_requirement_with_ai(title: str, description: str):
+
+    if config.AI_MODE != "live":
+        return mock_analyze_requirement(title, description)
+
+    from google.genai import types
 
     prompt = f"""
     You are an expert software QA Requirement Analyst.
@@ -43,7 +55,7 @@ def analyze_requirement_with_ai(title: str, description: str):
     Be specific and practical.
     """
 
-    response = client.models.generate_content(
+    response = get_client().models.generate_content(
         model="gemini-3.6-flash",
         contents=prompt,
         config=types.GenerateContentConfig(

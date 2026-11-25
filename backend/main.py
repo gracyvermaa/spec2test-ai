@@ -2,6 +2,7 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
+import config
 from schemas.requirement import (
     RequirementRequest,
     RequirementAnalysis
@@ -27,12 +28,8 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-        "http://localhost:5174",
-        "http://127.0.0.1:5174",
-    ],
+    allow_origins=config.ALLOWED_ORIGINS,
+    allow_origin_regex=config.ALLOWED_ORIGIN_REGEX,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -50,7 +47,8 @@ def home():
 def health_check():
     return {
         "status": "healthy",
-        "service": "Spec2Test AI Backend"
+        "service": "Spec2Test AI Backend",
+        "ai_mode": config.AI_MODE
     }
 
 

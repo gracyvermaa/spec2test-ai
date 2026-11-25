@@ -1,16 +1,21 @@
 
-from google.genai import types
-
+import config
 from schemas.requirement import RequirementAnalysis
 from schemas.test_case import TestCaseGenerationResponse
 from schemas.risk import RiskAssessmentResponse
-from services.ai_requirement_analyzer import client
+from services.ai_requirement_analyzer import get_client
+from services.mock_ai import mock_assess_risks
 
 
 def assess_risks(
     analysis: RequirementAnalysis,
     test_cases: TestCaseGenerationResponse
 ) -> RiskAssessmentResponse:
+
+    if config.AI_MODE != "live":
+        return mock_assess_risks(analysis, test_cases)
+
+    from google.genai import types
 
     prompt = f"""
     You are a senior Software Quality and Risk Assessment Engineer.
@@ -52,7 +57,7 @@ def assess_risks(
     Return structured JSON only.
     """
 
-    response = client.models.generate_content(
+    response = get_client().models.generate_content(
         model="gemini-3.6-flash",
         contents=prompt,
         config=types.GenerateContentConfig(

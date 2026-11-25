@@ -1,14 +1,19 @@
 
-from google.genai import types
-
+import config
 from schemas.requirement import RequirementAnalysis
 from schemas.test_case import TestCaseGenerationResponse
-from services.ai_requirement_analyzer import client
+from services.ai_requirement_analyzer import get_client
+from services.mock_ai import mock_generate_test_cases
 
 
 def generate_test_cases(
     analysis: RequirementAnalysis
 ) -> TestCaseGenerationResponse:
+
+    if config.AI_MODE != "live":
+        return mock_generate_test_cases(analysis)
+
+    from google.genai import types
 
     prompt = f"""
     You are an expert Software QA Test Engineer.
@@ -38,7 +43,7 @@ def generate_test_cases(
     Return structured JSON only.
     """
 
-    response = client.models.generate_content(
+    response = get_client().models.generate_content(
         model="gemini-3.6-flash",
         contents=prompt,
         config=types.GenerateContentConfig(
